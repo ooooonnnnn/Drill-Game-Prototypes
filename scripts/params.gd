@@ -21,8 +21,8 @@ const DEFS := {
 	"hook_retract_speed": [2000.0, 100.0, 6000.0, 10.0, "Retract speed (px/s)"],
 	"hook_reel_speed": [400.0, 10.0, 3000.0, 10.0, "Reel speed (px/s)"],
 	"enemy_mass": [50.0, 1.0, 500.0, 1.0, "Mass"],
-	"enemy_max_accel": [800.0, 10.0, 10000.0, 10.0, "Max acceleration (px/s²)"],
-	"enemy_max_speed": [400.0, 10.0, 5000.0, 10.0, "Max speed (px/s)"],
+	"enemy_max_accel": [200.0, 10.0, 10000.0, 10.0, "Max acceleration (px/s²)"],
+	"enemy_max_speed": [100.0, 10.0, 500.0, 10.0, "Max speed (px/s)"],
 	"enemy_knockback": [800.0, 0.0, 5000.0, 10.0, "Knockback (separation speed on contact, px/s)"],
 }
 
