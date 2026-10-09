@@ -14,6 +14,7 @@ const DEFS := {
 	"turn_threshold": [60.0, 0.0, 400.0, 1.0, "Turn threshold (px from cursor)"],
 	"turn_speed": [10.0, 0.5, 40.0, 0.5, "Turn speed (rad/s)"],
 	"collision_tolerance": [2.0, 0.5, 10.0, 0.1, "Collision tolerance (px; higher = coarser, faster)"],
+	"split_interval": [0.25, 0.05, 2.0, 0.05, "Disconnect check interval while drilling (s)"],
 	"debris_density": [1.0, 0.1, 20.0, 0.1, "Debris density (mass per 1000 px²)"],
 }
 
@@ -22,7 +23,7 @@ const CATEGORIES := [
 	["Player", ["size_fraction", "player_mass"]],
 	["Movement", ["stiffness", "damping_ratio", "max_accel", "max_speed"]],
 	["Turning", ["turn_threshold", "turn_speed"]],
-	["Terrain", ["collision_tolerance", "debris_density"]],
+	["Terrain", ["collision_tolerance", "split_interval", "debris_density"]],
 ]
 
 var size_fraction: float
@@ -34,6 +35,7 @@ var max_speed: float
 var turn_threshold: float
 var turn_speed: float
 var collision_tolerance: float
+var split_interval: float
 var debris_density: float
 
 
