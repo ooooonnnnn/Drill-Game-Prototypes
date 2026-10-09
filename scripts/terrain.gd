@@ -96,7 +96,7 @@ func _spawn_debris(parent, piece: Dictionary):
 	var debris := RigidBody2D.new()
 	debris.collision_layer = DEBRIS_LAYER
 	debris.collision_mask = TERRAIN_LAYER | DEBRIS_LAYER
-	debris.linear_damp = 1.0
+	debris.linear_damp = Params.debris_linear_damp
 	debris.angular_damp = 1.0
 	debris.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
 	debris.center_of_mass_mode = RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM

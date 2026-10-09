@@ -5,7 +5,7 @@ signal changed
 
 # name -> [default, min, max, step, label]
 const DEFS := {
-	"size_fraction": [0.05, 0.01, 0.2, 0.005, "Diameter (fraction of screen width)"],
+	"size_fraction": [0.02, 0.005, 0.1, 0.005, "Diameter (fraction of screen width)"],
 	"player_mass": [50.0, 1.0, 500.0, 1.0, "Mass"],
 	"spring_radius": [300.0, 10.0, 600.0, 1.0, "Spring radius (px from cursor; spring inside, full accel outside)"],
 	"max_accel": [1500.0, 100.0, 10000.0, 10.0, "Max acceleration (px/s²)"],
@@ -15,6 +15,7 @@ const DEFS := {
 	"collision_tolerance": [2.0, 0.5, 10.0, 0.1, "Collision tolerance (px; higher = coarser, faster)"],
 	"split_interval": [0.25, 0.05, 2.0, 0.05, "Disconnect check interval while drilling (s)"],
 	"debris_density": [1.0, 0.1, 20.0, 0.1, "Debris density (mass per 1000 px²)"],
+	"debris_linear_damp": [0.1, 0.0, 1, 0.05, "Debris linear damping (1/s)"],
 	"hook_launch_speed": [990.0, 100.0, 5000.0, 10.0, "Launch speed (px/s)"],
 	"hook_timeout": [1.5, 0.05, 3.0, 0.05, "Miss timeout (s)"],
 	"hook_retract_speed": [2000.0, 100.0, 6000.0, 10.0, "Retract speed (px/s)"],
@@ -26,7 +27,7 @@ const CATEGORIES := [
 	["Player", ["size_fraction", "player_mass"]],
 	["Movement", ["spring_radius", "max_accel", "max_speed", "max_speed_inside"]],
 	["Turning", ["turn_speed"]],
-	["Terrain", ["collision_tolerance", "split_interval", "debris_density"]],
+	["Terrain", ["collision_tolerance", "split_interval", "debris_density", "debris_linear_damp"]],
 	["Grappling hook", ["hook_launch_speed", "hook_timeout", "hook_retract_speed", "hook_reel_speed"]],
 ]
 
@@ -40,6 +41,7 @@ var turn_speed: float
 var collision_tolerance: float
 var split_interval: float
 var debris_density: float
+var debris_linear_damp: float
 var hook_launch_speed: float
 var hook_timeout: float
 var hook_retract_speed: float
