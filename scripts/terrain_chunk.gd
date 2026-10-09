@@ -236,7 +236,7 @@ func _extract(members: PackedInt32Array) -> Dictionary:
 # --- Collision --------------------------------------------------------------
 
 ## Rebuilds the collider from the current image, simplified by
-## Params.collision_tolerance. Rigid chunks also update mass and center of mass.
+## Params.collision_tolerance. Rigid chunks also update their mass properties.
 func rebuild_shapes() -> void:
 	var bitmap := BitMap.new()
 	bitmap.create_from_image_alpha(_image, 0.5)
@@ -283,15 +283,28 @@ func rebuild_shapes() -> void:
 
 	var rigid := body as RigidBody2D
 	rigid.mass = maxf(0.01, area * Params.debris_density * MASS_PER_PX)
-	center_of_mass = _solid_centroid()
-	rigid.center_of_mass = center_of_mass
+	_update_mass_distribution(rigid)
 
 
-func _solid_centroid() -> Vector2:
+## Center of mass and moment of inertia from the solid cells. The inertia is set
+## explicitly: Godot's automatic one measures every shape from its node origin
+## (the chunk's corner here, not the shape's centroid), which inflates it
+## several times over and makes debris unnaturally hard to spin.
+func _update_mass_distribution(rigid: RigidBody2D) -> void:
+	var centers := PackedVector2Array()
 	var sum := Vector2.ZERO
-	var count := 0
 	for cell in _grid.x * _grid.y:
 		if _cell_solid[cell] != 0:
-			sum += Vector2(Vector2i(cell % _grid.x, cell / _grid.x) * CELL) + Vector2.ONE * (CELL / 2.0)
-			count += 1
-	return sum / maxf(1.0, count)
+			var center := Vector2(Vector2i(cell % _grid.x, cell / _grid.x) * CELL) + Vector2.ONE * (CELL / 2.0)
+			centers.append(center)
+			sum += center
+	var count := maxi(1, centers.size())
+	center_of_mass = sum / count
+	rigid.center_of_mass = center_of_mass
+
+	# Each cell is a CELL x CELL square: its own inertia (side² / 6 per unit
+	# mass) plus the parallel-axis term.
+	var spread := 0.0
+	for center in centers:
+		spread += center.distance_squared_to(center_of_mass)
+	rigid.inertia = rigid.mass * (spread / count + CELL * CELL / 6.0)

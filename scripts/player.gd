@@ -1,8 +1,11 @@
 extends CharacterBody2D
-## Side-view, zero-gravity player. A spring pulls it towards the mouse cursor;
-## with damping_ratio = 1 the spring is critically damped, so it settles on the
-## cursor without overshoot. Acceleration is proportional to distance, capped at
-## max_accel (so far from the cursor it is constant).
+## Side-view, zero-gravity player, driven towards the mouse cursor. Outside
+## spring_radius it accelerates at a constant max_accel; inside, a spring pulls
+## it in, its constant chosen so it gives max_accel at the radius. Speed is
+## limited by linear friction rather than a hard cap: friction =
+## max_accel / max_speed, so full acceleration settles at max_speed. Inside the
+## radius the friction uses max_speed_inside instead, and is the spring's only
+## damping.
 
 const BODY_COLOR := Color("e0a526")
 const DRILL_COLOR := Color("e03a2b")
@@ -16,6 +19,7 @@ var _drilling := false
 var radius := 20.0
 
 @onready var shape: CollisionShape2D = $CollisionShape2D
+@onready var hook: Node2D = $GrapplingHook
 
 
 func _ready() -> void:
@@ -54,14 +58,26 @@ func _physics_process(delta: float) -> void:
 
 	var to_cursor := get_global_mouse_position() - global_position
 
-	var k := Params.stiffness
-	var accel := to_cursor * k - velocity * (2.0 * Params.damping_ratio * sqrt(k))
-	accel = accel.limit_length(Params.max_accel)
-	velocity = (velocity + accel * delta).limit_length(Params.max_speed)
+	var distance := to_cursor.length()
+	if distance > Params.spring_radius:
+		var drive := to_cursor / distance * Params.max_accel
+		_accelerate_with_friction(drive, Params.max_accel / Params.max_speed, delta)
+	else:
+		var k := Params.max_accel / Params.spring_radius
+		_accelerate_with_friction(to_cursor * k, Params.max_accel / Params.max_speed_inside, delta)
+	hook.apply_rope(delta)
 	_move_and_slide_along_surfaces(delta)
 
-	if to_cursor.length() > Params.turn_threshold:
+	if distance > radius: # no meaningful direction with the cursor over the body
 		rotation = rotate_toward(rotation, to_cursor.angle(), Params.turn_speed * delta)
+
+
+## Integrates dv/dt = drive - friction * v exactly over the step (drive held
+## constant), so a strong friction can't overshoot. Under a steady drive the
+## velocity settles at drive / friction.
+func _accelerate_with_friction(drive: Vector2, friction: float, delta: float) -> void:
+	var terminal := drive / friction
+	velocity = terminal + (velocity - terminal) * exp(-friction * delta)
 
 
 ## Replaces move_and_slide(): in floating mode it keeps the velocity component
