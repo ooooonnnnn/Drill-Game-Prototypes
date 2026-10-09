@@ -1,0 +1,53 @@
+extends FloatingBody
+## Basic enemy: accelerates straight at the player at a constant
+## Params.enemy_max_accel, its speed limited by linear friction to
+## Params.enemy_max_speed (like the player outside its spring radius). When it
+## touches the player, an impulse along the line between them sets them
+## separating at Params.enemy_knockback, split between the two by mass.
+
+const BODY_COLOR := Color("8e5bd6")
+const START_POSITION_FRACTION := Vector2(0.15, 0.1) ## spawn point as a fraction of the screen
+
+@export var player: FloatingBody
+
+
+func _ready() -> void:
+	super()
+	global_position = get_viewport_rect().size * START_POSITION_FRACTION
+
+
+func get_mass() -> float:
+	return Params.enemy_mass
+
+
+func body_color() -> Color:
+	return BODY_COLOR
+
+
+func _physics_process(delta: float) -> void:
+	var to_player := player.global_position - global_position
+	var distance := to_player.length()
+	var direction := to_player / distance if distance > 0.0 else Vector2.ZERO
+	var friction := Params.enemy_max_accel / Params.enemy_max_speed
+	_accelerate_with_friction(direction * Params.enemy_max_accel, friction, delta)
+	_move_and_slide_along_surfaces(delta)
+
+	if distance > radius:
+		rotation = rotate_toward(rotation, to_player.angle(), Params.turn_speed * delta)
+
+
+func _bumped(other: FloatingBody) -> void:
+	if other != player:
+		return
+	var offset := player.global_position - global_position
+	var distance := offset.length()
+	if distance == 0.0:
+		return
+	var n := offset / distance # from the enemy towards the player
+	var separating_speed := (player.velocity - velocity).dot(n)
+	if separating_speed >= Params.enemy_knockback:
+		return
+	var impulse := (Params.enemy_knockback - separating_speed) \
+			/ (1.0 / get_mass() + 1.0 / player.get_mass())
+	velocity -= n * (impulse / get_mass())
+	player.velocity += n * (impulse / player.get_mass())

@@ -20,6 +20,10 @@ const DEFS := {
 	"hook_timeout": [1.5, 0.05, 3.0, 0.05, "Miss timeout (s)"],
 	"hook_retract_speed": [2000.0, 100.0, 6000.0, 10.0, "Retract speed (px/s)"],
 	"hook_reel_speed": [400.0, 10.0, 3000.0, 10.0, "Reel speed (px/s)"],
+	"enemy_mass": [50.0, 1.0, 500.0, 1.0, "Mass"],
+	"enemy_max_accel": [800.0, 10.0, 10000.0, 10.0, "Max acceleration (px/s²)"],
+	"enemy_max_speed": [400.0, 10.0, 5000.0, 10.0, "Max speed (px/s)"],
+	"enemy_knockback": [800.0, 0.0, 5000.0, 10.0, "Knockback (separation speed on contact, px/s)"],
 }
 
 # Menu sections, in display order: [title, [keys...]]
@@ -29,6 +33,7 @@ const CATEGORIES := [
 	["Turning", ["turn_speed"]],
 	["Terrain", ["collision_tolerance", "split_interval", "debris_density", "debris_linear_damp"]],
 	["Grappling hook", ["hook_launch_speed", "hook_timeout", "hook_retract_speed", "hook_reel_speed"]],
+	["Enemy", ["enemy_mass", "enemy_max_accel", "enemy_max_speed", "enemy_knockback"]],
 ]
 
 var size_fraction: float
@@ -46,6 +51,10 @@ var hook_launch_speed: float
 var hook_timeout: float
 var hook_retract_speed: float
 var hook_reel_speed: float
+var enemy_mass: float
+var enemy_max_accel: float
+var enemy_max_speed: float
+var enemy_knockback: float
 
 
 func _init() -> void:

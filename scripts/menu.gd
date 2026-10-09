@@ -1,5 +1,6 @@
 extends Control
-## Parameter menu screen: sliders grouped by Params.CATEGORIES.
+## Parameter menu screen: sliders grouped by Params.CATEGORIES, in a vertically
+## scrolling list.
 ## "Restart" opens the game scene with the current parameters.
 
 const GAME_SCENE := "res://scenes/game.tscn"
@@ -8,7 +9,7 @@ const SLIDER_WIDTH := 300
 const VALUE_WIDTH := 64
 const HEADER_COLOR := Color("e0a526")
 
-@onready var rows: VBoxContainer = $Center/VBox/Rows
+@onready var rows: VBoxContainer = $Center/VBox/Scroll/Rows
 @onready var restart_button: Button = $Center/VBox/Buttons/Restart
 @onready var defaults_button: Button = $Center/VBox/Buttons/Defaults
 

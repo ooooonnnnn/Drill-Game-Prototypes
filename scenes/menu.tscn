@@ -27,8 +27,14 @@ layout_mode = 2
 text = "Drill Game Prototype - Parameters"
 horizontal_alignment = 1
 
-[node name="Rows" type="VBoxContainer" parent="Center/VBox"]
+[node name="Scroll" type="ScrollContainer" parent="Center/VBox"]
+custom_minimum_size = Vector2(0, 600)
 layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Rows" type="VBoxContainer" parent="Center/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="Buttons" type="HBoxContainer" parent="Center/VBox"]
 layout_mode = 2

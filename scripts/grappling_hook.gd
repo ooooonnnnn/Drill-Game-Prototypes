@@ -1,21 +1,20 @@
 extends Node2D
 ## Grappling hook, fired with the right mouse button towards the cursor.
 ##
-## The hook flies in a straight line (zero gravity). If it hits terrain or
-## debris it attaches; otherwise it retracts after Params.hook_timeout, or
+## The hook flies in a straight line (zero gravity). If it hits terrain,
+## debris or an enemy it attaches; otherwise it retracts after Params.hook_timeout, or
 ## sooner if RMB is pressed again while it is still in flight. While
 ## attached the rope has a desired length (the distance at attach time) and
 ## only pulls: the player feels nothing while closer than that. Tapping RMB
 ## while attached releases the hook; holding it reels the rope in, shortening
-## the desired length. Debris the hook hangs on is pulled too, sharing momentum
-## with the player by mass.
+## the desired length. Debris or an enemy the hook hangs on is pulled too,
+## sharing momentum with the player by mass.
 ##
 ## Lives as a top_level child of the player, so it draws in global space.
 
 enum State { IDLE, FLYING, ATTACHED, RETRACTING }
 
-const TERRAIN_LAYER := 2
-const DEBRIS_LAYER := 4
+const GRAPPLE_MASK := FloatingBody.TERRAIN_LAYER | FloatingBody.DEBRIS_LAYER | FloatingBody.ENEMY_LAYER
 const MASS_RATIO := 0.1 ## hook mass as a fraction of the player's
 const TAP_TIME := 0.2 ## RMB released sooner than this while attached counts as a tap (release)
 const ANCHOR_MISSES := 3 ## frames with nothing solid under the hook before it lets go
@@ -54,6 +53,8 @@ func hook_mass() -> float:
 
 
 func anchor_position() -> Vector2:
+	if _anchor_body is FloatingBody:
+		return _anchor_body.global_position + _anchor_local
 	return _anchor_body.to_global(_anchor_local)
 
 
@@ -106,7 +107,7 @@ func _launch() -> void:
 func _fly(delta: float) -> void:
 	_timer += delta
 	var next := _pos + _vel * delta
-	var query := PhysicsRayQueryParameters2D.create(_pos, next, TERRAIN_LAYER | DEBRIS_LAYER)
+	var query := PhysicsRayQueryParameters2D.create(_pos, next, GRAPPLE_MASK)
 	var hit := get_world_2d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		_pos = next
@@ -115,16 +116,20 @@ func _fly(delta: float) -> void:
 		return
 
 	_pos = hit["position"]
-	var debris := hit["collider"] as RigidBody2D
-	if debris != null:
-		debris.apply_impulse(_vel * hook_mass(), _pos - debris.global_position)
-	_attach(hit["collider"])
+	var collider: CollisionObject2D = hit["collider"]
+	if collider is RigidBody2D:
+		collider.apply_impulse(_vel * hook_mass(), _pos - collider.global_position)
+	elif collider is FloatingBody:
+		collider.velocity += _vel * (hook_mass() / collider.get_mass())
+	_attach(collider)
 	rope_length = _player.global_position.distance_to(_pos)
 
 
+## On an enemy the attachment point keeps its offset from the center but
+## ignores the enemy's rotation, which only shows where it is facing.
 func _attach(body: CollisionObject2D) -> void:
 	_anchor_body = body
-	_anchor_local = body.to_local(_pos)
+	_anchor_local = _pos - body.global_position if body is FloatingBody else body.to_local(_pos)
 	_anchor_misses = 0
 	state = State.ATTACHED
 
@@ -142,7 +147,7 @@ func _check_anchor() -> void:
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = _probe
 	query.transform = Transform2D(0.0, _pos)
-	query.collision_mask = TERRAIN_LAYER | DEBRIS_LAYER
+	query.collision_mask = GRAPPLE_MASK
 	var hits := get_world_2d().direct_space_state.intersect_shape(query, 8)
 	if hits.is_empty():
 		# Freshly rebuilt shapes can take a frame to show up in queries.
@@ -184,7 +189,8 @@ func _start_retract() -> void:
 ## Called by the player before it moves. If this frame's motion would carry the
 ## player past the rope's desired length, an impulse along the rope cuts the
 ## separating speed to exactly what reaches that length (pulling in any
-## stretch, e.g. from reeling). It is shared with debris the hook is on. Slack
+## stretch, e.g. from reeling). It is shared with debris or an enemy the hook
+## is on. Slack
 ## rope that stays slack does nothing.
 func apply_rope(delta: float) -> void:
 	if state != State.ATTACHED or not is_instance_valid(_anchor_body):
@@ -207,6 +213,10 @@ func apply_rope(delta: float) -> void:
 		if debris.inertia > 0.0:
 			inv_mass += pow(arm.cross(n), 2.0) / debris.inertia
 		anchor_vel = debris.linear_velocity + debris.angular_velocity * Vector2(-arm.y, arm.x)
+	var enemy := _anchor_body as FloatingBody
+	if enemy != null:
+		inv_mass += 1.0 / enemy.get_mass()
+		anchor_vel = enemy.velocity
 
 	var target := (rope_length - dist) / delta # separating speed that ends this frame at rope_length
 	var speed := (_player.velocity - anchor_vel).dot(n)
@@ -216,6 +226,8 @@ func apply_rope(delta: float) -> void:
 	_player.velocity -= n * (impulse / Params.player_mass)
 	if debris != null:
 		debris.apply_impulse(n * impulse, anchor - debris.global_position)
+	if enemy != null:
+		enemy.velocity += n * (impulse / enemy.get_mass())
 
 
 func _draw() -> void:
