@@ -15,8 +15,8 @@ const DEFS := {
 	"collision_tolerance": [2.0, 0.5, 10.0, 0.1, "Collision tolerance (px; higher = coarser, faster)"],
 	"split_interval": [0.25, 0.05, 2.0, 0.05, "Disconnect check interval while drilling (s)"],
 	"debris_density": [1.0, 0.1, 20.0, 0.1, "Debris density (mass per 1000 px²)"],
-	"hook_launch_speed": [1500.0, 100.0, 5000.0, 10.0, "Launch speed (px/s)"],
-	"hook_timeout": [0.6, 0.05, 3.0, 0.05, "Miss timeout (s)"],
+	"hook_launch_speed": [990.0, 100.0, 5000.0, 10.0, "Launch speed (px/s)"],
+	"hook_timeout": [1.5, 0.05, 3.0, 0.05, "Miss timeout (s)"],
 	"hook_retract_speed": [2000.0, 100.0, 6000.0, 10.0, "Retract speed (px/s)"],
 	"hook_reel_speed": [400.0, 10.0, 3000.0, 10.0, "Reel speed (px/s)"],
 }
