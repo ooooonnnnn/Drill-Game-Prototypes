@@ -8,6 +8,8 @@ const BODY_COLOR := Color("e0a526")
 const DRILL_COLOR := Color("e03a2b")
 const NOSE_COLOR := Color("2b2f3a")
 const TERRAIN_LAYER := 2
+const DEBRIS_LAYER := 4
+const START_HEIGHT_FRACTION := 0.1 ## spawn height as a fraction of screen height
 
 var _drilling := false
 
@@ -24,7 +26,8 @@ func _ready() -> void:
 
 
 func _restart() -> void:
-	global_position = get_viewport_rect().size / 2.0
+	var screen := get_viewport_rect().size
+	global_position = Vector2(screen.x / 2.0, screen.y * START_HEIGHT_FRACTION)
 	velocity = Vector2.ZERO
 	rotation = 0.0
 
@@ -44,7 +47,7 @@ func _physics_process(delta: float) -> void:
 	# Drilling passes through terrain (the terrain erases itself around the
 	# player); otherwise terrain is solid.
 	var drilling := is_drilling()
-	collision_mask = 0 if drilling else TERRAIN_LAYER
+	collision_mask = 0 if drilling else TERRAIN_LAYER | DEBRIS_LAYER
 	if drilling != _drilling:
 		_drilling = drilling
 		queue_redraw()
@@ -74,10 +77,26 @@ func _move_and_slide_along_surfaces(delta: float) -> void:
 		if collision == null:
 			return
 		var normal := collision.get_normal()
-		velocity = velocity.slide(normal)
+		var debris := collision.get_collider() as RigidBody2D
+		if debris != null:
+			_push_debris(debris, collision)
+		else:
+			velocity = velocity.slide(normal)
 		motion = collision.get_remainder().slide(normal)
 		if motion.length_squared() < 0.0001:
 			return
+
+
+## Perfectly inelastic collision with a rigid body: both end up moving at the
+## same speed along the contact normal, with momentum shared by mass.
+func _push_debris(debris: RigidBody2D, collision: KinematicCollision2D) -> void:
+	var normal := collision.get_normal() # points from the debris towards the player
+	var closing_speed := (velocity - debris.linear_velocity).dot(-normal)
+	if closing_speed <= 0.0:
+		return
+	var impulse := closing_speed / (1.0 / Params.player_mass + 1.0 / debris.mass)
+	debris.apply_impulse(-normal * impulse, collision.get_position() - debris.global_position)
+	velocity += normal * (impulse / Params.player_mass)
 
 
 func _draw() -> void:
