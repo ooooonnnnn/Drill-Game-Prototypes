@@ -2,7 +2,6 @@ extends Node
 ## Autoload "Params": tweakable values shared by the player and the menu.
 
 signal changed
-signal restart_requested
 
 # name -> [default, min, max, step, label]
 const DEFS := {

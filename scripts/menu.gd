@@ -1,11 +1,12 @@
-extends CanvasLayer
-## Parameter menu: one slider per entry in Params.DEFS, plus Restart / Reset.
-## Esc toggles visibility.
+extends Control
+## Parameter menu screen: one slider per entry in Params.DEFS.
+## "Restart" opens the game scene with the current parameters.
 
-@onready var panel: PanelContainer = $Panel
-@onready var rows: VBoxContainer = $Panel/Margin/VBox/Rows
-@onready var restart_button: Button = $Panel/Margin/VBox/Buttons/Restart
-@onready var defaults_button: Button = $Panel/Margin/VBox/Buttons/Defaults
+const GAME_SCENE := "res://scenes/game.tscn"
+
+@onready var rows: VBoxContainer = $Center/VBox/Rows
+@onready var restart_button: Button = $Center/VBox/Buttons/Restart
+@onready var defaults_button: Button = $Center/VBox/Buttons/Defaults
 
 var _sliders := {}
 
@@ -13,7 +14,7 @@ var _sliders := {}
 func _ready() -> void:
 	for key in Params.DEFS:
 		_add_row(key)
-	restart_button.pressed.connect(func(): Params.restart_requested.emit())
+	restart_button.pressed.connect(func(): get_tree().change_scene_to_file(GAME_SCENE))
 	defaults_button.pressed.connect(_on_defaults)
 
 
@@ -26,7 +27,7 @@ func _add_row(key: String) -> void:
 	slider.max_value = def[2]
 	slider.step = def[3]
 	slider.value = Params.get(key)
-	slider.custom_minimum_size.x = 320
+	slider.custom_minimum_size.x = 420
 	slider.focus_mode = Control.FOCUS_NONE
 	rows.add_child(slider)
 	_sliders[key] = slider
@@ -41,8 +42,3 @@ func _on_defaults() -> void:
 	Params.reset_defaults()
 	for key in _sliders:
 		_sliders[key].value = Params.get(key)
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		panel.visible = not panel.visible

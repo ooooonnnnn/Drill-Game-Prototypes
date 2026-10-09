@@ -15,7 +15,6 @@ var radius := 20.0
 func _ready() -> void:
 	shape.shape = CircleShape2D.new()
 	Params.changed.connect(_apply_size)
-	Params.restart_requested.connect(_restart)
 	_apply_size()
 	_restart()
 
