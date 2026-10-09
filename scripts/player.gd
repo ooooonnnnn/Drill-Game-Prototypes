@@ -55,10 +55,29 @@ func _physics_process(delta: float) -> void:
 	var accel := to_cursor * k - velocity * (2.0 * Params.damping_ratio * sqrt(k))
 	accel = accel.limit_length(Params.max_accel)
 	velocity = (velocity + accel * delta).limit_length(Params.max_speed)
-	move_and_slide()
+	_move_and_slide_along_surfaces(delta)
 
 	if to_cursor.length() > Params.turn_threshold:
 		rotation = rotate_toward(rotation, to_cursor.angle(), Params.turn_speed * delta)
+
+
+## Replaces move_and_slide(): in floating mode it keeps the velocity component
+## pushing into a surface, and it rescales the slid motion to the full leftover
+## length, so a body pressed against terrain slides at close to full speed and
+## releases its stored-up velocity when it clears the edge. Here the normal
+## component is removed from velocity on every hit and the remainder keeps its
+## natural (projected) length.
+func _move_and_slide_along_surfaces(delta: float) -> void:
+	var motion := velocity * delta
+	for i in 4:
+		var collision := move_and_collide(motion)
+		if collision == null:
+			return
+		var normal := collision.get_normal()
+		velocity = velocity.slide(normal)
+		motion = collision.get_remainder().slide(normal)
+		if motion.length_squared() < 0.0001:
+			return
 
 
 func _draw() -> void:
