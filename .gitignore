@@ -1,0 +1,25 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Godot 3 (legacy) import cache
+.import/
+
+# Exports and builds
+export_presets.cfg
+/build/
+/export/
+*.apk
+*.aab
+
+# Mono / C# (if used)
+.mono/
+data_*/
+mono_crash.*.json
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
