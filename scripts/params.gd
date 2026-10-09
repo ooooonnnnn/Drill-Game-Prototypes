@@ -11,6 +11,7 @@ const DEFS := {
 	"max_speed": [1500.0, 100.0, 5000.0, 10.0, "Max speed (px/s)"],
 	"turn_threshold": [60.0, 0.0, 400.0, 1.0, "Turn threshold (px from cursor)"],
 	"turn_speed": [10.0, 0.5, 40.0, 0.5, "Turn speed (rad/s)"],
+	"collision_tolerance": [2.0, 0.5, 10.0, 0.1, "Terrain collision tolerance (px; higher = coarser outline, faster)"],
 	"size_fraction": [0.05, 0.01, 0.2, 0.005, "Player diameter (fraction of screen width)"],
 }
 
@@ -20,6 +21,7 @@ var max_accel: float
 var max_speed: float
 var turn_threshold: float
 var turn_speed: float
+var collision_tolerance: float
 var size_fraction: float
 
 

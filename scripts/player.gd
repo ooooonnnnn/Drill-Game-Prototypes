@@ -5,7 +5,11 @@ extends CharacterBody2D
 ## max_accel (so far from the cursor it is constant).
 
 const BODY_COLOR := Color("e0a526")
+const DRILL_COLOR := Color("e03a2b")
 const NOSE_COLOR := Color("2b2f3a")
+const TERRAIN_LAYER := 2
+
+var _drilling := false
 
 var radius := 20.0
 
@@ -31,7 +35,20 @@ func _apply_size() -> void:
 	queue_redraw()
 
 
+## The player drills only while the left mouse button is held.
+func is_drilling() -> bool:
+	return Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+
+
 func _physics_process(delta: float) -> void:
+	# Drilling passes through terrain (the terrain erases itself around the
+	# player); otherwise terrain is solid.
+	var drilling := is_drilling()
+	collision_mask = 0 if drilling else TERRAIN_LAYER
+	if drilling != _drilling:
+		_drilling = drilling
+		queue_redraw()
+
 	var to_cursor := get_global_mouse_position() - global_position
 
 	var k := Params.stiffness
@@ -45,6 +62,6 @@ func _physics_process(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, radius, BODY_COLOR)
+	draw_circle(Vector2.ZERO, radius, DRILL_COLOR if _drilling else BODY_COLOR)
 	# Nose shows facing direction (+X is forward).
 	draw_line(Vector2.ZERO, Vector2(radius, 0.0), NOSE_COLOR, maxf(2.0, radius * 0.15))
