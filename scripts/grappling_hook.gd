@@ -2,7 +2,8 @@ extends Node2D
 ## Grappling hook, fired with the right mouse button towards the cursor.
 ##
 ## The hook flies in a straight line (zero gravity). If it hits terrain or
-## debris it attaches; otherwise it retracts after Params.hook_timeout. While
+## debris it attaches; otherwise it retracts after Params.hook_timeout, or
+## sooner if RMB is pressed again while it is still in flight. While
 ## attached the rope has a desired length (the distance at attach time) and
 ## only pulls: the player feels nothing while closer than that. Tapping RMB
 ## while attached releases the hook; holding it reels the rope in, shortening
@@ -75,6 +76,8 @@ func _handle_input(delta: float) -> void:
 	if pressed:
 		if state == State.IDLE:
 			_launch()
+		elif state == State.FLYING:
+			_start_retract()
 		elif state == State.ATTACHED:
 			_reeling = true
 			_press_time = 0.0
