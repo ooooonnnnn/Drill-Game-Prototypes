@@ -118,8 +118,8 @@ func flush_texture() -> void:
 ## Re-checks the cells touched since the last poll, then finds regions that have
 ## come apart. Returns the regions to cut out as dictionaries
 ## {image, origin (px, local), solid_cells}. They are already removed from this
-## chunk. Static chunk: every region not touching the left, right or bottom
-## edge. Rigid chunk: every region except the largest.
+## chunk. Static chunk: every region not containing the origin cell (bottom
+## center). Rigid chunk: every region except the largest.
 func poll() -> Array[Dictionary]:
 	needs_poll = false
 	_refresh_cells()
@@ -174,21 +174,22 @@ func _refresh_cells() -> void:
 func _find_regions(regions: Array[PackedInt32Array], anchored: Array[bool]) -> void:
 	_labels.resize(_grid.x * _grid.y)
 	_labels.fill(0)
+	var origin := (_grid.y - 1) * _grid.x + _grid.x / 2 # bottom-center cell
 	for start in _grid.x * _grid.y:
 		if _labels[start] != 0 or _cell_solid[start] == 0:
 			continue
 		var members := PackedInt32Array()
-		var touches_edge := false
+		var has_origin := false
 		_stack = PackedInt32Array([start])
 		_labels[start] = 1
 		while not _stack.is_empty():
 			var cell := _stack[_stack.size() - 1]
 			_stack.resize(_stack.size() - 1)
 			members.append(cell)
+			if cell == origin:
+				has_origin = true
 			var x := cell % _grid.x
 			var y := cell / _grid.x
-			if x == 0 or x == _grid.x - 1 or y == _grid.y - 1:
-				touches_edge = true
 			if x > 0:
 				_visit(cell - 1)
 			if x < _grid.x - 1:
@@ -198,7 +199,7 @@ func _find_regions(regions: Array[PackedInt32Array], anchored: Array[bool]) -> v
 			if y < _grid.y - 1:
 				_visit(cell + _grid.x)
 		regions.append(members)
-		anchored.append(touches_edge)
+		anchored.append(has_origin)
 
 
 func _visit(cell: int) -> void:
