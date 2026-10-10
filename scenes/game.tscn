@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/terrain.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/asteroid_belt.gd" id="5"]
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1")
@@ -15,6 +16,10 @@ player = NodePath("../Player")
 
 [node name="Enemy" parent="." node_paths=PackedStringArray("player") instance=ExtResource("4")]
 player = NodePath("../Player")
+
+[node name="AsteroidBelt" type="Node2D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("5")
+terrain = NodePath("../Terrain")
 
 [node name="Camera" type="Camera2D" parent="."]
 process_callback = 0

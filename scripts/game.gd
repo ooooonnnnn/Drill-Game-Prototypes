@@ -18,6 +18,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not is_instance_valid(player): # destroyed: the camera stays where it is
+		return
 	var weight := 1.0 - exp(-Params.camera_follow_rate * delta)
 	camera.global_position = camera.global_position.lerp(player.global_position, weight)
 

@@ -11,6 +11,7 @@ const Chunk := preload("res://scripts/terrain_chunk.gd")
 const MassLabel := preload("res://scripts/mass_label.gd")
 const TERRAIN_LAYER := 2
 const DEBRIS_LAYER := 4
+const ASTEROID_LAYER := 16
 const ERASE_MARGIN := 1.0 ## extra px erased around the player so it never starts inside solid terrain
 
 @export var player: Node2D
@@ -40,7 +41,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var drilling: bool = player.is_drilling()
+	var drilling: bool = is_instance_valid(player) and player.is_drilling()
 	var due := not drilling
 	if drilling:
 		var pos := player.global_position
@@ -96,7 +97,9 @@ func _poll_dirty_chunks() -> void:
 func _spawn_debris(parent, piece: Dictionary):
 	var debris := RigidBody2D.new()
 	debris.collision_layer = DEBRIS_LAYER
-	debris.collision_mask = TERRAIN_LAYER | DEBRIS_LAYER
+	# Debris must scan asteroids too, or it ignores their contacts and stops them
+	# dead like a wall.
+	debris.collision_mask = TERRAIN_LAYER | DEBRIS_LAYER | ASTEROID_LAYER
 	debris.linear_damp = Params.debris_linear_damp
 	debris.angular_damp = 1.0
 	debris.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
@@ -113,6 +116,13 @@ func _spawn_debris(parent, piece: Dictionary):
 	var chunk = Chunk.new(debris, visual, piece["image"], piece["solid_cells"])
 	_chunks.append(chunk)
 	return chunk
+
+
+## Erases a disc swept from one global point to another out of the terrain and
+## all debris. Split checks follow as for drilling.
+func erase_path(from_global: Vector2, to_global: Vector2, radius: float) -> void:
+	for chunk in _chunks:
+		chunk.stamp_path(from_global, to_global, radius)
 
 
 ## State of a chunk's body at the moment a piece is cut from it.

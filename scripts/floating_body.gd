@@ -11,6 +11,7 @@ const PLAYER_LAYER := 1
 const TERRAIN_LAYER := 2
 const DEBRIS_LAYER := 4
 const ENEMY_LAYER := 8
+const GROUP := "floating_bodies"
 
 var radius := 20.0
 ## Part of this body's velocity change in the current collision that
@@ -21,10 +22,15 @@ var unfelt_velocity_change := Vector2.ZERO
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	shape.shape = CircleShape2D.new()
 	add_child(MassLabel.new())
 	Params.changed.connect(_apply_size)
 	_apply_size()
+
+
+func destroy() -> void:
+	queue_free()
 
 
 ## Overridden by subclasses.

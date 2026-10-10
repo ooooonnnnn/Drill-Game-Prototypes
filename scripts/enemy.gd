@@ -38,6 +38,10 @@ func _felt_impact(impulse: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not is_instance_valid(player): # destroyed: coast to a stop
+		_accelerate_with_friction(Vector2.ZERO, Params.enemy_max_accel / Params.enemy_max_speed, delta)
+		_move_and_slide_along_surfaces(delta)
+		return
 	var to_player := player.global_position - global_position
 	var distance := to_player.length()
 	var direction := to_player / distance if distance > 0.0 else Vector2.ZERO
