@@ -4,7 +4,9 @@ extends FloatingBody
 ## Params.enemy_max_speed (like the player outside its spring radius). When it
 ## touches the player, an impulse along the line between them sets them
 ## separating at Params.enemy_knockback, split between the two by mass. A
-## collision whose impulse on it exceeds Params.enemy_break_impulse destroys it.
+## collision whose impulse on it exceeds Params.enemy_break_impulse destroys it;
+## the recoil from knocking the player away doesn't count, but the part of the
+## impulse that stops a player ramming into it does.
 
 signal impacted(impulse: float) ## a collision gave it at least MIN_REPORTED_IMPULSE
 
@@ -62,3 +64,8 @@ func _bumped(other: FloatingBody) -> void:
 			/ (1.0 / get_mass() + 1.0 / player.get_mass())
 	velocity -= n * (impulse / get_mass())
 	player.velocity += n * (impulse / player.get_mass())
+	# The knockback itself is the part pushing them apart from at rest to
+	# enemy_knockback; anything above that stopped the player closing in.
+	var knockback_impulse := (Params.enemy_knockback - maxf(separating_speed, 0.0)) \
+			/ (1.0 / get_mass() + 1.0 / player.get_mass())
+	unfelt_velocity_change -= n * (knockback_impulse / get_mass())

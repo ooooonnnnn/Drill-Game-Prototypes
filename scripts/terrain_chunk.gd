@@ -265,6 +265,7 @@ func rebuild_shapes() -> void:
 		if child is CollisionShape2D:
 			body.remove_child(child)
 			child.queue_free()
+	var shape_count := 0
 	for polygon in polygons:
 		if polygon.size() < 3:
 			continue
@@ -277,7 +278,8 @@ func rebuild_shapes() -> void:
 			var collision := CollisionShape2D.new()
 			collision.shape = convex
 			body.add_child(collision)
-	if body.get_child_count() <= 1: # only the visual
+			shape_count += 1
+	if shape_count == 0:
 		empty = true
 		return
 

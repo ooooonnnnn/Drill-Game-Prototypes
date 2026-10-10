@@ -8,6 +8,7 @@ extends Node2D
 ## rebuilt. Debris is drilled exactly like the main terrain.
 
 const Chunk := preload("res://scripts/terrain_chunk.gd")
+const MassLabel := preload("res://scripts/mass_label.gd")
 const TERRAIN_LAYER := 2
 const DEBRIS_LAYER := 4
 const ERASE_MARGIN := 1.0 ## extra px erased around the player so it never starts inside solid terrain
@@ -106,6 +107,7 @@ func _spawn_debris(parent, piece: Dictionary):
 	var visual := ColorRect.new()
 	visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	debris.add_child(visual)
+	debris.add_child(MassLabel.new())
 	add_child(debris)
 
 	var chunk = Chunk.new(debris, visual, piece["image"], piece["solid_cells"])

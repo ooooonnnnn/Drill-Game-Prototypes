@@ -4,6 +4,8 @@ extends CharacterBody2D
 ## Params.size_fraction, drawn with a nose showing its facing) that is driven
 ## against linear friction, slides along terrain and shoves debris.
 
+const MassLabel := preload("res://scripts/mass_label.gd")
+
 const NOSE_COLOR := Color("2b2f3a")
 const PLAYER_LAYER := 1
 const TERRAIN_LAYER := 2
@@ -11,12 +13,16 @@ const DEBRIS_LAYER := 4
 const ENEMY_LAYER := 8
 
 var radius := 20.0
+## Part of this body's velocity change in the current collision that
+## _felt_impact should not count. Set by _bumped; cleared after each collision.
+var unfelt_velocity_change := Vector2.ZERO
 
 @onready var shape: CollisionShape2D = $CollisionShape2D
 
 
 func _ready() -> void:
 	shape.shape = CircleShape2D.new()
+	add_child(MassLabel.new())
 	Params.changed.connect(_apply_size)
 	_apply_size()
 
@@ -77,13 +83,19 @@ func _move_and_slide_along_surfaces(delta: float) -> void:
 		if collider is RigidBody2D:
 			_push_debris(collider, collision)
 		else:
-			velocity = velocity.slide(normal)
+			# Bodies resolve their contact first, so the closing speed is still
+			# there to be exchanged; the slide only stops what is left of it.
 			if other != null:
 				_bumped(other)
 				other._bumped(self)
+			if velocity.dot(normal) < 0.0:
+				velocity = velocity.slide(normal)
 		if other != null:
-			other._felt_impact(other.get_mass() * (other.velocity - other_velocity_before).length())
-		_felt_impact(get_mass() * (velocity - velocity_before).length())
+			other._felt_impact(other.get_mass() \
+					* (other.velocity - other_velocity_before - other.unfelt_velocity_change).length())
+			other.unfelt_velocity_change = Vector2.ZERO
+		_felt_impact(get_mass() * (velocity - velocity_before - unfelt_velocity_change).length())
+		unfelt_velocity_change = Vector2.ZERO
 		motion = collision.get_remainder().slide(normal)
 		if motion.length_squared() < 0.0001:
 			return
