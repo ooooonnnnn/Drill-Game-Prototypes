@@ -16,6 +16,9 @@ player = NodePath("../Player")
 [node name="Enemy" parent="." node_paths=PackedStringArray("player") instance=ExtResource("4")]
 player = NodePath("../Player")
 
+[node name="Camera" type="Camera2D" parent="."]
+process_callback = 0
+
 [node name="Hud" type="CanvasLayer" parent="."]
 
 [node name="ImpulseLabel" type="Label" parent="Hud"]

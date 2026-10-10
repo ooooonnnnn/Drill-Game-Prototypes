@@ -13,9 +13,6 @@ const HEADER_COLOR := Color("e0a526")
 @onready var rows: VBoxContainer = $Center/VBox/Scroll/Rows
 @onready var start_button: Button = $Center/VBox/Buttons/Start
 @onready var save_button: Button = $Center/VBox/Buttons/Save
-@onready var defaults_button: Button = $Center/VBox/Buttons/Defaults
-
-var _sliders := {}
 
 
 func _ready() -> void:
@@ -25,7 +22,6 @@ func _ready() -> void:
 			_add_row(key)
 	start_button.pressed.connect(func(): get_tree().change_scene_to_file(GAME_SCENE))
 	save_button.pressed.connect(Params.save_settings)
-	defaults_button.pressed.connect(_on_defaults)
 
 
 func _add_header(title: String) -> void:
@@ -59,7 +55,6 @@ func _add_row(key: String) -> void:
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.focus_mode = Control.FOCUS_NONE
 	row.add_child(slider)
-	_sliders[key] = slider
 
 	var value_label := Label.new()
 	value_label.custom_minimum_size.x = VALUE_WIDTH
@@ -71,9 +66,3 @@ func _add_row(key: String) -> void:
 	slider.value_changed.connect(func(value: float):
 		update_label.call(value)
 		Params.set_param(key, value))
-
-
-func _on_defaults() -> void:
-	Params.reset_defaults()
-	for key in _sliders:
-		_sliders[key].value = Params.get(key)

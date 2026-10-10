@@ -28,6 +28,7 @@ const DEFS := {
 	"enemy_max_accel": [200.0, 10.0, 10000.0, 10.0, "Max acceleration (px/s²)"],
 	"enemy_max_speed": [100.0, 10.0, 500.0, 10.0, "Max speed (px/s)"],
 	"enemy_knockback": [800.0, 0.0, 5000.0, 10.0, "Knockback (separation speed on contact, px/s)"],
+	"camera_follow_rate": [6.0, 0.1, 30.0, 0.1, "Follow rate (1/s; the gap shrinks by a factor e every 1/rate seconds)"],
 	"enemy_break_impulse": [30000.0, 0.0, 200000.0, 500.0, "Break impulse (collision impulse that destroys it, mass·px/s)"],
 }
 
@@ -39,6 +40,7 @@ const CATEGORIES := [
 	["Terrain", ["collision_tolerance", "split_interval", "debris_density", "debris_linear_damp"]],
 	["Grappling hook", ["hook_launch_speed", "hook_timeout", "hook_retract_speed", "hook_reel_speed"]],
 	["Enemy", ["enemy_mass", "enemy_max_accel", "enemy_max_speed", "enemy_knockback", "enemy_break_impulse"]],
+	["Camera", ["camera_follow_rate"]],
 ]
 
 var size_fraction: float
@@ -61,6 +63,7 @@ var enemy_max_accel: float
 var enemy_max_speed: float
 var enemy_knockback: float
 var enemy_break_impulse: float
+var camera_follow_rate: float
 
 
 func _init() -> void:
