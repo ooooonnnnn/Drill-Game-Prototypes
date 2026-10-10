@@ -15,3 +15,20 @@ player = NodePath("../Player")
 
 [node name="Enemy" parent="." node_paths=PackedStringArray("player") instance=ExtResource("4")]
 player = NodePath("../Player")
+
+[node name="Hud" type="CanvasLayer" parent="."]
+
+[node name="ImpulseLabel" type="Label" parent="Hud"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.1, 0.11, 0.15, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 24
+vertical_alignment = 1

@@ -3,8 +3,12 @@ extends FloatingBody
 ## Params.enemy_max_accel, its speed limited by linear friction to
 ## Params.enemy_max_speed (like the player outside its spring radius). When it
 ## touches the player, an impulse along the line between them sets them
-## separating at Params.enemy_knockback, split between the two by mass.
+## separating at Params.enemy_knockback, split between the two by mass. A
+## collision whose impulse on it exceeds Params.enemy_break_impulse destroys it.
 
+signal impacted(impulse: float) ## a collision gave it at least MIN_REPORTED_IMPULSE
+
+const MIN_REPORTED_IMPULSE := 1000.0 ## ignores the small per-frame impulses of resting contact
 const BODY_COLOR := Color("8e5bd6")
 const START_POSITION_FRACTION := Vector2(0.15, 0.1) ## spawn point as a fraction of the screen
 
@@ -22,6 +26,13 @@ func get_mass() -> float:
 
 func body_color() -> Color:
 	return BODY_COLOR
+
+
+func _felt_impact(impulse: float) -> void:
+	if impulse >= MIN_REPORTED_IMPULSE:
+		impacted.emit(impulse)
+	if impulse > Params.enemy_break_impulse:
+		queue_free()
 
 
 func _physics_process(delta: float) -> void:

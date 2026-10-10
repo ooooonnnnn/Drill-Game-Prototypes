@@ -37,6 +37,12 @@ func _bumped(_other: FloatingBody) -> void:
 	pass
 
 
+## Called with the size of the impulse (mass * change in velocity) a collision
+## gave this body. Overridden by subclasses.
+func _felt_impact(_impulse: float) -> void:
+	pass
+
+
 func _apply_size() -> void:
 	radius = get_viewport_rect().size.x * Params.size_fraction / 2.0
 	(shape.shape as CircleShape2D).radius = radius
@@ -65,13 +71,19 @@ func _move_and_slide_along_surfaces(delta: float) -> void:
 			return
 		var normal := collision.get_normal()
 		var collider := collision.get_collider()
+		var other := collider as FloatingBody
+		var velocity_before := velocity
+		var other_velocity_before := other.velocity if other != null else Vector2.ZERO
 		if collider is RigidBody2D:
 			_push_debris(collider, collision)
 		else:
 			velocity = velocity.slide(normal)
-			if collider is FloatingBody:
-				_bumped(collider)
-				collider._bumped(self)
+			if other != null:
+				_bumped(other)
+				other._bumped(self)
+		if other != null:
+			other._felt_impact(other.get_mass() * (other.velocity - other_velocity_before).length())
+		_felt_impact(get_mass() * (velocity - velocity_before).length())
 		motion = collision.get_remainder().slide(normal)
 		if motion.length_squared() < 0.0001:
 			return

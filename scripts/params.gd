@@ -1,7 +1,11 @@
 extends Node
-## Autoload "Params": tweakable values shared by the game and the menu.
+## Autoload "Params": tweakable values shared by the game and the menu. Values
+## saved with save_settings() are loaded again on the next launch.
 
 signal changed
+
+const SETTINGS_PATH := "user://settings.cfg"
+const SETTINGS_SECTION := "params"
 
 # name -> [default, min, max, step, label]
 const DEFS := {
@@ -24,6 +28,7 @@ const DEFS := {
 	"enemy_max_accel": [200.0, 10.0, 10000.0, 10.0, "Max acceleration (px/s²)"],
 	"enemy_max_speed": [100.0, 10.0, 500.0, 10.0, "Max speed (px/s)"],
 	"enemy_knockback": [800.0, 0.0, 5000.0, 10.0, "Knockback (separation speed on contact, px/s)"],
+	"enemy_break_impulse": [30000.0, 0.0, 200000.0, 500.0, "Break impulse (collision impulse that destroys it, mass·px/s)"],
 }
 
 # Menu sections, in display order: [title, [keys...]]
@@ -33,7 +38,7 @@ const CATEGORIES := [
 	["Turning", ["turn_speed"]],
 	["Terrain", ["collision_tolerance", "split_interval", "debris_density", "debris_linear_damp"]],
 	["Grappling hook", ["hook_launch_speed", "hook_timeout", "hook_retract_speed", "hook_reel_speed"]],
-	["Enemy", ["enemy_mass", "enemy_max_accel", "enemy_max_speed", "enemy_knockback"]],
+	["Enemy", ["enemy_mass", "enemy_max_accel", "enemy_max_speed", "enemy_knockback", "enemy_break_impulse"]],
 ]
 
 var size_fraction: float
@@ -55,10 +60,12 @@ var enemy_mass: float
 var enemy_max_accel: float
 var enemy_max_speed: float
 var enemy_knockback: float
+var enemy_break_impulse: float
 
 
 func _init() -> void:
 	reset_defaults()
+	_load_settings()
 
 
 func reset_defaults() -> void:
@@ -69,4 +76,22 @@ func reset_defaults() -> void:
 
 func set_param(key: String, value: float) -> void:
 	set(key, value)
+	changed.emit()
+
+
+func save_settings() -> void:
+	var config := ConfigFile.new()
+	for key in DEFS:
+		config.set_value(SETTINGS_SECTION, key, get(key))
+	config.save(SETTINGS_PATH)
+
+
+## Keys no longer in DEFS are ignored, and missing ones keep their defaults.
+func _load_settings() -> void:
+	var config := ConfigFile.new()
+	if config.load(SETTINGS_PATH) != OK:
+		return
+	for key in DEFS:
+		if config.has_section_key(SETTINGS_SECTION, key):
+			set(key, float(config.get_value(SETTINGS_SECTION, key)))
 	changed.emit()

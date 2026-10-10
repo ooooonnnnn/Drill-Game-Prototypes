@@ -1,7 +1,8 @@
 extends Control
 ## Parameter menu screen: sliders grouped by Params.CATEGORIES, in a vertically
 ## scrolling list.
-## "Restart" opens the game scene with the current parameters.
+## "Start" opens the game scene with the current parameters; "Save" keeps them
+## for the next launch.
 
 const GAME_SCENE := "res://scenes/game.tscn"
 const LABEL_WIDTH := 380
@@ -10,7 +11,8 @@ const VALUE_WIDTH := 64
 const HEADER_COLOR := Color("e0a526")
 
 @onready var rows: VBoxContainer = $Center/VBox/Scroll/Rows
-@onready var restart_button: Button = $Center/VBox/Buttons/Restart
+@onready var start_button: Button = $Center/VBox/Buttons/Start
+@onready var save_button: Button = $Center/VBox/Buttons/Save
 @onready var defaults_button: Button = $Center/VBox/Buttons/Defaults
 
 var _sliders := {}
@@ -21,7 +23,8 @@ func _ready() -> void:
 		_add_header(category[0])
 		for key in category[1]:
 			_add_row(key)
-	restart_button.pressed.connect(func(): get_tree().change_scene_to_file(GAME_SCENE))
+	start_button.pressed.connect(func(): get_tree().change_scene_to_file(GAME_SCENE))
+	save_button.pressed.connect(Params.save_settings)
 	defaults_button.pressed.connect(_on_defaults)
 
 

@@ -40,9 +40,13 @@ size_flags_horizontal = 3
 layout_mode = 2
 alignment = 1
 
-[node name="Restart" type="Button" parent="Center/VBox/Buttons"]
+[node name="Start" type="Button" parent="Center/VBox/Buttons"]
 layout_mode = 2
-text = "Restart"
+text = "Start"
+
+[node name="Save" type="Button" parent="Center/VBox/Buttons"]
+layout_mode = 2
+text = "Save"
 
 [node name="Defaults" type="Button" parent="Center/VBox/Buttons"]
 layout_mode = 2
